@@ -1,28 +1,47 @@
 use v6;
 use Test;
+use Test::META;
 use lib <lib>;
-#use lib </home/mark/tmp>;
 
-# class StubIO is IO::Handle {
-#     has @.input handles (:push<push>, :get<shift>, :queue-input<push>);
-#     has @.output handles (:print<push>);
-#     multi method t() { Bool::True; }
-# }
+plan 31;
+
+meta-ok();
 
 use-ok 'Prompt::Gruff', 'Can use Prompt::Gruff';
 use Prompt::Gruff;
 
 ok my $gruff = Prompt::Gruff.new, 'Prompt::Gruff instantiate';
-# can-ok $gruff, 'required';
-# can-ok $gruff, 'multiple';
-# can-ok $gruff, 'prompt-for';
+can-ok $gruff, 'required';
+can-ok $gruff, 'multi-line';
+can-ok $gruff, 'verify';
+can-ok $gruff, 'default';
+can-ok $gruff, 'regex';
+can-ok $gruff, 'yn';
+can-ok $gruff, 'no-escape';
+can-ok $gruff, 'prompt-for';
 
-# my $stub = StubIO.new(:input("Cindy", ""));
-# let $*IN = $stub;
-# ok my $result = $gruff.prompt-for('Name: '), 'Call prompt-for';
-# is $result, 'Cindy', 'Cindy passes';
+ok my $gr = Prompt::Gruff.new(:testing, :_test-input(['Gorgonzola'])), 'testing and test-input instantiation';
+ok my $r = $gr.prompt-for('Name a cheese: '), 'prompt call';
+is $r, 'Gorgonzola', 'Basic cheese';
+ok ('Name a cheese: ' eq any $gr._test-output), 'prompted with string';
 
-#say $gruff.prompt-for("Like it?: ", :yn, :default('n'));
-#say $gruff.prompt-for("Name: ", multi-line => True, verify => 2, :default('Cindy'));
-#say $gruff.prompt-for("Name: ", :verify(2), :default('Cindy'), :no-escape(False));
-say $gruff.prompt-for("Name starting with M: ", :regex('^M.*'), :no-escape(False));
+ok $gr = Prompt::Gruff.new(:testing, :_test-input(['Gorgonzola', 'Havarti'])), 'testing and test-input instantiation';
+ok $r = $gr.prompt-for('Name a cheese: ', :regex('^H.*')), 'prompt call';
+is $r, 'Havarti', 'Regex';
+ok ('Input does not match valid pattern' eq any $gr._test-output), 'Regex verify failed';
+
+ok $gr = Prompt::Gruff.new(:testing, :_test-input(['Gorgonzola', 'Havarti', 'Havarti'])), 'testing and test-input instantiation';
+ok $r = $gr.prompt-for('Name a cheese: ', :regex('^H.*'), :verify(2)), 'prompt call with verify';
+is $r, 'Havarti', 'Regex with verify';
+ok ('Input does not match valid pattern' eq any $gr._test-output), 'Regex verify failed';
+ok ('(verify) Name a cheese: ' eq any $gr._test-output), 'Verify prompt portion';
+
+ok $gr = Prompt::Gruff.new(:testing, :_test-input(['n'])), 'testing and test-input instantiation';
+nok $r = $gr.prompt-for('Do you like me?', :yn), 'yes and no sadness';
+ok $gr = Prompt::Gruff.new(:testing, :_test-input(['Y'])), 'testing and test-input instantiation';
+ok $r = $gr.prompt-for('Do you like me?', :yn), 'yes and no happiness';
+
+ok $gr = Prompt::Gruff.new(:testing, :_test-input([''])), 'testing and test-input instantiation';
+ok $r = $gr.prompt-for('Where are the dingbats?', :default('UFO')), 'trying default';
+is $r, 'UFO', 'UFO default';
+

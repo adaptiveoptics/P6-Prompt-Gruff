@@ -10,6 +10,10 @@ class Prompt::Gruff
     has Bool $.yn         is rw;
     has Bool $.no-escape  is rw = True;
 
+    has Bool $.testing      is rw = False;
+    has Str  @._test-input  is rw;
+    has Str  @._test-output;
+    
     has $!_previous_response;
     has $!_prompt;
     
@@ -30,16 +34,15 @@ class Prompt::Gruff
 	         else {         $response = $prompter($!_prompt) || $!default     }
 
         if $!regex and !($response ~~ $RX) {
-	    note 'Input does not match valid pattern';
+            self!_error_message('Input does not match valid pattern');
 	    return self!_call-prompt-for($prompt) if $!no-escape;
 	    return False;
 	}
-	
-	if $!_previous_response and $!_previous_response ne $response {
-	    note 'Verification failed';
-	    $!_previous_response = '';
-	    $!verify++;
+
+	if $!_previous_response and ($!_previous_response ne $response) {
+	    self!_error_message('Verification failed');
 	    return self!_call-prompt-for($prompt) if $!no-escape;
+	    $!_previous_response = '';
 	    return False;
 	}
 	$!_previous_response = $response;
@@ -55,6 +58,10 @@ class Prompt::Gruff
 	self!_call-prompt-for($prompt);
     }
 
+    method !_error_message($msg) {
+	$!testing ?? @._test-output.push: $msg !! note $msg;
+    }
+	
     method !_mk_regex() {
 	return unless $!regex;
 	if $!yn.defined { $!regex = ':i y || n' }
@@ -74,6 +81,10 @@ class Prompt::Gruff
     }	
     
     method !_mk_prompter() {
+	 if $!testing {
+	     return -> $text { @!_test-output.push: $text;
+			       shift @!_test-input };
+	 }
 	return $!multi-line ?? -> $text { say $text; slurp $*IN }
 	                    !! -> $text { prompt $text };
     }	
@@ -99,7 +110,7 @@ class Prompt::Gruff
 =head1 SYNOPSIS
 
     =begin code :skip-test
-    use Prompt::Gruff::Functional;
+    use Prompt::Gruff::Export;
 
     # Input is required by default
     my $name = prompt-for('Enter name (required): ');
@@ -118,8 +129,12 @@ class Prompt::Gruff
 
     use Prompt::Gruff;
 
+    # Prompt for Name and make them verify everything prompted for with that
+    # object henceforth until the verify attribute is changed.
+
     my $gruff = Prompt::Gruff.new;
-    my $name  = $gruff.prompt-for('Name');
+    $gruff->verify(2);
+    my $name  = $gruff.prompt-for('Name: ');
     =end code
 
 =head1 DESCRIPTION
@@ -156,12 +171,8 @@ If it's set to more than 1, then each time they re-enter it, their
 input will be verified against the last thing they entered -- and if
 they didn't enter it in exactly the same, they get asked again.
 
-If you like, set :no-escape(False) and the program will terminate and
-they'll have to start all over again if they make a mistake! I know!
-:)
-
 I strongly recommend a verify setting of at least 5. For
-everything. All the time.
+everything. All the time. And think happy thoughts!
 
 =head2 regex (Str)
 
@@ -213,7 +224,7 @@ attributes.
 
 =head1 AUTHOR
 
-Mark Rushing <mark@orbislumen.net>
+Mark Rushing mark@orbislumen.net
 
 =head1 LICENSE
 
