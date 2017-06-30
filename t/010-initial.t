@@ -1,11 +1,8 @@
 use v6;
 use Test;
-use Test::META;
 use lib <lib>;
 
-plan 31;
-
-meta-ok();
+plan 30;
 
 use-ok 'Prompt::Gruff', 'Can use Prompt::Gruff';
 use Prompt::Gruff;

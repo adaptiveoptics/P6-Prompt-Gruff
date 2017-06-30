@@ -11,8 +11,7 @@
     },
     "depends" : [ 
 		],
-    "test-depends" : [ "Test",
-		       "Test::META"
+    "test-depends" : [ "Test"
 		     ],
     "resources" : [ ],
     "source-url" : "git://github.com/adaptiveoptics/P6-Prompt-Gruff.git"
