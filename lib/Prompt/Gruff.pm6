@@ -63,8 +63,8 @@ class Prompt::Gruff
     }
 	
     method !_mk_regex() {
-	return unless $!regex;
 	if $!yn.defined { $!regex = ':i y || n' }
+	return unless $!regex;
 	my $regex = $!regex;
 	return rx/<$regex>/;
     }	
