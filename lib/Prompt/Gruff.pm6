@@ -102,7 +102,6 @@ class Prompt::Gruff
     }
 }
 
-#|{
 =begin pod
 
 =head1 NAME Prompt::Gruff
@@ -232,4 +231,3 @@ This is free software; you can redistribute it and/or modify it under
 the Artistic License 2.0.
 
 =end pod
-}

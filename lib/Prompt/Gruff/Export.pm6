@@ -7,7 +7,6 @@ sub prompt-for($prompt, *%opts) is export {
     Prompt::Gruff.new.prompt-for($prompt, |%opts);
 }
 
-#|{
 =begin pod
 
 =head1 NAME Prompt::Gruff::Export
@@ -20,6 +19,7 @@ sub prompt-for($prompt, *%opts) is export {
     $answer = prompt-for("Name: ");
 
     # See Prompt::Gruff for details on options/attributes
+    =end code
 
 =head1 DESCRIPTION
 
@@ -38,4 +38,3 @@ This is free software; you can redistribute it and/or modify it under
 the Artistic License 2.0.
 
 =end pod
-}
