@@ -1,3 +1,10 @@
 language: perl6
+
 perl6:
- - latest
+  - latest
+
+install:
+  - rakudobrew build-zef
+  - zef install --depsonly .
+
+sudo: false
